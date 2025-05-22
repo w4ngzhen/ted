@@ -7,5 +7,10 @@ edition = "2024"
 members = ["crates/*"]
 
 [dependencies]
+ratatui = { workspace = true }
+tui-textarea = { workspace = true }
+ted_layout = { path = 'crates/ted_layout' }
+
+[workspace.dependencies]
 ratatui = "0.29.0"
 tui-textarea = "0.7.0"

@@ -1,10 +1,3 @@
-use ratatui::Terminal;
-use ratatui::backend::CrosstermBackend;
-use ratatui::crossterm::event::{DisableMouseCapture, EnableMouseCapture};
-use ratatui::crossterm::terminal::{
-    EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode,
-    enable_raw_mode,
-};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::{Block, Borders};
 use std::env;
@@ -12,6 +5,7 @@ use std::fmt;
 use std::fs;
 use std::io;
 use std::io::BufRead;
+use ted_layout::TedLayoutBuilder;
 use tui_textarea::{CursorMove, Input, Key, Scrolling, TextArea};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -307,17 +301,7 @@ impl Vim {
 }
 
 fn main() -> io::Result<()> {
-    let stdout = io::stdout();
-    let mut stdout = stdout.lock();
-
-    enable_raw_mode()?;
-    ratatui::crossterm::execute!(
-        stdout,
-        EnterAlternateScreen,
-        EnableMouseCapture
-    )?;
-    let backend = CrosstermBackend::new(stdout);
-    let mut term = Terminal::new(backend)?;
+    let mut term = ratatui::init();
 
     let mut textarea = if let Some(path) = env::args().nth(1) {
         let file = fs::File::open(path)?;
@@ -330,8 +314,13 @@ fn main() -> io::Result<()> {
     textarea.set_cursor_style(Mode::Normal.cursor_style());
     let mut vim = Vim::new(Mode::Normal);
 
+    let ted_layout_builder = TedLayoutBuilder::default();
+
     loop {
-        term.draw(|f| f.render_widget(&textarea, f.area()))?;
+        term.draw(|f| {
+            let ted_layout = ted_layout_builder.build(f.area());
+            f.render_widget(&textarea, ted_layout.content)
+        })?;
 
         let event = ratatui::crossterm::event::read()?;
         vim = match vim.transition(event.into(), &mut textarea) {
@@ -346,13 +335,7 @@ fn main() -> io::Result<()> {
         }
     }
 
-    disable_raw_mode()?;
-    ratatui::crossterm::execute!(
-        term.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    )?;
-    term.show_cursor()?;
+    ratatui::restore();
 
     println!("Lines: {:?}", textarea.lines());
 

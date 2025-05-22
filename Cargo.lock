@@ -449,12 +449,20 @@ name = "ted"
 version = "0.1.0"
 dependencies = [
  "ratatui",
+ "ted_layout",
  "tui-textarea",
 ]
 
 [[package]]
 name = "ted_common"
 version = "0.1.0"
+
+[[package]]
+name = "ted_layout"
+version = "0.1.0"
+dependencies = [
+ "ratatui",
+]
 
 [[package]]
 name = "tui-textarea"
