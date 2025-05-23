@@ -1,0 +1,8 @@
+[package]
+name = "ted_fs_explorer"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ratatui = { workspace = true }
+tui-tree-widget = "0.23.0"

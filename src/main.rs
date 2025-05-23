@@ -1,3 +1,4 @@
+use ratatui::crossterm::event::{Event, KeyCode, KeyEventKind};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::widgets::{Block, Borders};
 use std::env;
@@ -5,7 +6,9 @@ use std::fmt;
 use std::fs;
 use std::io;
 use std::io::BufRead;
-use ted_layout::TedLayoutBuilder;
+use std::path::PathBuf;
+use ted_fs_explorer::fs_explorer::FsExplorer;
+use ted_layout::TedLayoutManager;
 use tui_textarea::{CursorMove, Input, Key, Scrolling, TextArea};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -314,24 +317,50 @@ fn main() -> io::Result<()> {
     textarea.set_cursor_style(Mode::Normal.cursor_style());
     let mut vim = Vim::new(Mode::Normal);
 
-    let ted_layout_builder = TedLayoutBuilder::default();
+    let mut layout_manager = TedLayoutManager::default();
+    layout_manager.set_left_aside_width(20);
+
+    let mut fs_explorer = FsExplorer::build(PathBuf::from(
+        "/Users/w4ngzhen/projects/rust-projects/ted/crates/ted_fs_explorer/test",
+    ))?;
+
+    let mut focus_editor = true;
 
     loop {
         term.draw(|f| {
-            let ted_layout = ted_layout_builder.build(f.area());
-            f.render_widget(&textarea, ted_layout.content)
+            let ted_layout = layout_manager.build(f.area());
+            f.render_widget(&textarea, ted_layout.content);
+            fs_explorer.draw(f, ted_layout.aside_left);
         })?;
 
         let event = ratatui::crossterm::event::read()?;
-        vim = match vim.transition(event.into(), &mut textarea) {
-            Transition::Mode(mode) if vim.mode != mode => {
-                textarea.set_block(mode.block());
-                textarea.set_cursor_style(mode.cursor_style());
-                Vim::new(mode)
+
+        match event {
+            Event::Key(key) if !matches!(key.kind, KeyEventKind::Press) => {
+                ();
             }
-            Transition::Nop | Transition::Mode(_) => vim,
-            Transition::Pending(input) => vim.with_pending(input),
-            Transition::Quit => break,
+            Event::Key(key) => match key.code {
+                KeyCode::F(1) => {
+                    focus_editor = !focus_editor;
+                }
+                _ => {}
+            },
+            _ => {}
+        }
+
+        if focus_editor {
+            vim = match vim.transition(event.into(), &mut textarea) {
+                Transition::Mode(mode) if vim.mode != mode => {
+                    textarea.set_block(mode.block());
+                    textarea.set_cursor_style(mode.cursor_style());
+                    Vim::new(mode)
+                }
+                Transition::Nop | Transition::Mode(_) => vim,
+                Transition::Pending(input) => vim.with_pending(input),
+                Transition::Quit => break,
+            }
+        } else {
+            fs_explorer.handle_event(event);
         }
     }
 
