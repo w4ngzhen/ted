@@ -11,6 +11,7 @@ ratatui = { workspace = true }
 tui-textarea = { workspace = true }
 ted_layout = { path = 'crates/ted_layout' }
 ted_fs_explorer = { path = 'crates/ted_fs_explorer' }
+ted_editor = { path = 'crates/ted_editor' }
 
 [workspace.dependencies]
 ratatui = "0.29.0"

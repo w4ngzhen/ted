@@ -449,6 +449,7 @@ name = "ted"
 version = "0.1.0"
 dependencies = [
  "ratatui",
+ "ted_editor",
  "ted_fs_explorer",
  "ted_layout",
  "tui-textarea",
