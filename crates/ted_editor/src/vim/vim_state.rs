@@ -13,16 +13,7 @@ pub(crate) enum Mode {
 
 impl Mode {
     pub(crate) fn block<'a>(&self) -> Block<'a> {
-        let help = match self {
-            Self::Normal => "type q to quit, type i to enter insert mode",
-            Self::Insert => "type Esc to back to normal mode",
-            Self::Visual => {
-                "type y to yank, type d to delete, type Esc to back to normal mode"
-            }
-            Self::Operator(_) => "move cursor to apply operator",
-        };
-        let title = format!("{} MODE ({})", self, help);
-        Block::default().borders(Borders::ALL).title(title)
+        Block::default().borders(Borders::ALL)
     }
 
     pub(crate) fn cursor_style(&self) -> Style {

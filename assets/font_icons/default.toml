@@ -1,0 +1,13 @@
+[info]
+name = 'default'
+version = '0.1.0'
+[file_extensions]
+gitignore = 'e65d'
+rs = '1234'
+md = 'eb1d'
+txt = 'e64e'
+toml = 'e6b2'
+json = 'eb0f'
+dir_closed = 'f413'
+dir_closed_fill = 'f4d3'
+dir_opened = 'f4d4'

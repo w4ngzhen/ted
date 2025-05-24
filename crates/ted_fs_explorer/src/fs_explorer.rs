@@ -10,12 +10,14 @@ pub struct FsExplorer {
     root_item: Vec<TreeItem<'static, String>>,
 }
 impl FsExplorer {
-    pub fn build(root_path: PathBuf) -> io::Result<FsExplorer> {
+    pub fn new(root_path: PathBuf) -> io::Result<FsExplorer> {
         fn build_items(
             path: &PathBuf,
             curr_level: u8,
             max_level: u8,
         ) -> io::Result<TreeItem<'static, String>> {
+            let file_name =
+                path.file_name().unwrap().to_owned().into_string().unwrap();
             let path_str = path.to_str().expect("");
             if path.is_dir() && curr_level <= max_level {
                 let mut children = vec![];
@@ -27,16 +29,10 @@ impl FsExplorer {
                         build_items(&path_in_dir, curr_level + 1, max_level)?;
                     children.push(child_item);
                 }
-                TreeItem::new(
-                    path_str.to_string(),
-                    path_str.to_string(),
-                    children,
-                )
+                TreeItem::new(path_str.to_string(), file_name, children)
             } else {
-                Ok(TreeItem::new_leaf(
-                    path_str.to_string(),
-                    path_str.to_string(),
-                ))
+                let ext = path.extension().unwrap().to_str().unwrap();
+                Ok(TreeItem::new_leaf(path_str.to_string(), file_name))
             }
         }
 
@@ -49,78 +45,10 @@ impl FsExplorer {
         Ok(Self { state: TreeState::default(), root_item: vec![root_item] })
     }
 
-    pub fn build_mock() -> io::Result<FsExplorer> {
-        Ok(Self {
-            state: TreeState::default(),
-            root_item: vec![
-                TreeItem::new_leaf("a".to_string(), "Alfa"),
-                TreeItem::new(
-                    "b".to_string(),
-                    "Bravo",
-                    vec![
-                        TreeItem::new_leaf("c".to_string(), "Charlie"),
-                        TreeItem::new(
-                            "d".to_string(),
-                            "Delta",
-                            vec![
-                                TreeItem::new_leaf("e".to_string(), "Echo"),
-                                TreeItem::new_leaf("f".to_string(), "Foxtrot"),
-                            ],
-                        )
-                        .expect("all item identifiers are unique"),
-                        TreeItem::new_leaf("g".to_string(), "Golf"),
-                    ],
-                )
-                .expect("all item identifiers are unique"),
-                TreeItem::new_leaf("h".to_string(), "Hotel"),
-                TreeItem::new(
-                    "i".to_string(),
-                    "India",
-                    vec![
-                        TreeItem::new_leaf("j".to_string(), "Juliett"),
-                        TreeItem::new_leaf("k".to_string(), "Kilo"),
-                        TreeItem::new_leaf("l".to_string(), "Lima"),
-                        TreeItem::new_leaf("m".to_string(), "Mike"),
-                        TreeItem::new_leaf("n".to_string(), "November"),
-                    ],
-                )
-                .expect("all item identifiers are unique"),
-                TreeItem::new_leaf("o".to_string(), "Oscar"),
-                TreeItem::new(
-                    "p".to_string(),
-                    "Papa".to_string(),
-                    vec![
-                        TreeItem::new_leaf("q".to_string(), "Quebec"),
-                        TreeItem::new_leaf("r".to_string(), "Romeo"),
-                        TreeItem::new_leaf("s".to_string(), "Sierra"),
-                        TreeItem::new_leaf("t".to_string(), "Tango"),
-                        TreeItem::new_leaf("u".to_string(), "Uniform"),
-                        TreeItem::new(
-                            "v".to_string(),
-                            "Victor",
-                            vec![
-                                TreeItem::new_leaf("w".to_string(), "Whiskey"),
-                                TreeItem::new_leaf("x".to_string(), "Xray"),
-                                TreeItem::new_leaf("y".to_string(), "Yankee"),
-                            ],
-                        )
-                        .expect("all item identifiers are unique"),
-                    ],
-                )
-                .expect("all item identifiers are unique"),
-                TreeItem::new_leaf("z".to_string(), "Zulu"),
-            ],
-        })
-    }
-
     pub fn draw(&mut self, frame: &mut Frame, area: Rect) {
         let widget = Tree::new(&self.root_item)
             .expect("all item identifiers are unique")
-            .block(
-                Block::bordered()
-                    .title("Tree Widget")
-                    .title_bottom(format!("{:?}", self.state)),
-            )
+            .block(Block::bordered().title("project"))
             .experimental_scrollbar(Some(
                 Scrollbar::new(ScrollbarOrientation::VerticalRight)
                     .begin_symbol(None)
@@ -132,8 +60,7 @@ impl FsExplorer {
                     .fg(Color::Black)
                     .bg(Color::LightGreen)
                     .add_modifier(Modifier::BOLD),
-            )
-            .highlight_symbol(">");
+            );
         frame.render_stateful_widget(widget, area, &mut self.state);
     }
 

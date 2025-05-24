@@ -13,7 +13,7 @@ fn main() -> io::Result<()> {
     let mut layout_manager = TedLayoutManager::default();
     layout_manager.set_left_aside_width(20);
 
-    let mut fs_explorer = FsExplorer::build(PathBuf::from(
+    let mut fs_explorer = FsExplorer::new(PathBuf::from(
         "/Users/w4ngzhen/projects/rust-projects/ted/crates/ted_fs_explorer/test",
     ))?;
 

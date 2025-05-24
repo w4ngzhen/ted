@@ -16,3 +16,4 @@ ted_editor = { path = 'crates/ted_editor' }
 [workspace.dependencies]
 ratatui = "0.29.0"
 tui-textarea = "0.7.0"
+toml = { version = "0.8.22" }
