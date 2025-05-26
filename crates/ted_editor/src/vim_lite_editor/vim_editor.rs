@@ -1,15 +1,15 @@
-use crate::vim::vim_state::{Mode, Transition, VimState};
+use crate::vim_lite_editor::vim_state::{Mode, Transition, VimState};
 use ratatui::Frame;
 use ratatui::crossterm::event::Event;
 use ratatui::prelude::*;
 use tui_textarea::TextArea;
 
-pub struct VimEditor<'a> {
+pub struct VimLiteEditor<'a> {
     textarea: TextArea<'a>,
     vim_state: VimState,
 }
 
-impl<'a> VimEditor<'a> {
+impl<'a> VimLiteEditor<'a> {
     pub fn new() -> Self {
         let mut textarea = TextArea::default();
         textarea.set_block(Mode::Normal.block());
@@ -18,8 +18,8 @@ impl<'a> VimEditor<'a> {
         Self { textarea, vim_state }
     }
 
-    pub fn draw(&self, frame: &mut Frame, area: Rect) {
-        frame.render_widget(&self.textarea, area);
+    pub fn draw(&mut self, frame: &mut Frame, area: Rect) {
+        frame.render_widget(self, area);
     }
 
     pub fn handle_event(&mut self, event: Event) {
@@ -35,5 +35,11 @@ impl<'a> VimEditor<'a> {
             Transition::Pending(input) => curr_state.with_pending(input),
             Transition::Quit => curr_state,
         }
+    }
+}
+
+impl<'a> Widget for &mut VimLiteEditor<'a> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        self.textarea.render(area, buf);
     }
 }

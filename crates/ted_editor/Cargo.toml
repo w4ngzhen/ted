@@ -5,4 +5,5 @@ edition = "2024"
 
 [dependencies]
 ratatui = { workspace = true }
-tui-textarea = { workspace = true }
+tui-textarea = "0.7.0"
+edtui = { version = "0.9.6" }
